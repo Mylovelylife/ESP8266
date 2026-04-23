@@ -1,5 +1,6 @@
 #include "JimHelper.h"
 #include <ESP8266httpUpdate.h>
+#include <Adafruit_GFX.h>
 
 JimHelper::JimHelper() {}
 
@@ -110,4 +111,32 @@ void JimHelper::checkUpdate()
         }
         http.end();
     }
+}
+
+void JimHelper::LedDraw(String _wo, String _text, int _stock, Adafruit_SSD1306& display, int screenWidth, int screenHeight) 
+{
+  display.clearDisplay(); // 務必先清除緩衝區
+
+  //畫一個外框
+  display.drawRect(0, 0, screenWidth, screenHeight, WHITE);
+
+  //設定文字屬性
+  display.setTextSize(1);      
+  display.setTextColor(WHITE); 
+  
+  //第一行文字
+  display.setCursor(10, 4);    
+  display.println("WO:" + _wo);
+  //第二行文字
+  display.setTextSize(1);
+  display.setCursor(10, 24);
+  display.println("Stock:" + String(_stock));
+  //第三行文字
+  display.setTextSize(1);
+  display.setCursor(10, 44);
+  display.println(String("PU:") + _text);
+
+
+  // 真正將以上指令推送到螢幕
+  display.display(); 
 }

@@ -6,6 +6,7 @@
 #include <WiFiManager.h>
 #include <ThingSpeak.h>
 #include <PubSubClient.h>
+#include <Adafruit_SSD1306.h>
 
 
 class JimHelper 
@@ -21,6 +22,7 @@ class JimHelper
 	void Post2ThingSpeak(); //資料拋傳至thingspeak
 	void reconnectMQTT(PubSubClient& _client); //MQTT重連
 	void checkUpdate(); //OAT更新
+	void LedDraw(String _wo, String _text, int _stock, Adafruit_SSD1306& display, int screenWidth = 128, int screenHeight = 64); //OLED顯示
 };
 
 #endif

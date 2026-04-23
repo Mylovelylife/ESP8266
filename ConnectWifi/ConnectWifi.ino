@@ -137,7 +137,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
   if (error) 
   {
-    Serial.print("JSON 解析失敗: ");
+    Serial.print("JSON 解析失���: ");
     Serial.println(error.c_str());
     return;
   }
@@ -164,7 +164,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     String wo   = doc.containsKey("wo")      ? doc["wo"].as<String>()      : "N/A";
     int stock   = doc.containsKey("stock")   ? doc["stock"].as<int>()      : 0;
 
-    LedDraw(wo,text,stock);
+    helper.LedDraw(wo, text, stock, display, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     digitalWrite(LED_PIN, LOW); // 亮燈
   }
@@ -173,35 +173,3 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     Serial.println(">>> 收到未知指令，不執行任何動作。");
   }
 }
-
-void LedDraw(String _wo,String _text,int _stock) 
-{
-  display.clearDisplay(); // 務必先清除緩衝區
-
-  //畫一個外框
-  display.drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, WHITE);
-
-  //設定文字屬性
-  display.setTextSize(1);      
-  display.setTextColor(WHITE); 
-  
-  //第一行文字
-  display.setCursor(10, 4);    
-  display.println("WO:" + _wo);
-  //第二行文字
-  display.setTextSize(1);
-  display.setCursor(10, 24);
-  display.println("Stock:" + String(_stock));
-  //第三行文字
-  display.setTextSize(1);
-  display.setCursor(10, 44);
-  display.println(String("PU:") + _text);
-
-
-  // 真正將以上指令推送到螢幕
-  display.display(); 
-}
-
-
-
-
