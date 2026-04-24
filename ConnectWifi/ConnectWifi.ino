@@ -25,15 +25,15 @@ const char* MQTT_TOPIC  = "device/ESP8266-7ac074";
 #define LED_PIN 2
 
 // ========== 全域變數 ==========
-WiFiClient       wifiClient;
-PubSubClient    mqttClient(wifiClient);
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
-JimHelper      helper;
+WiFiClient       g_WifiClient;
+PubSubClient    g_MQTTClient(g_WifiClient);
+Adafruit_SSD1306 g_Display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+JimHelper      g_Helper;
 
 int lastBtnState = LOW;
 
 // ==========  Callback ==========
-void mqttCallback(char* topic, byte* payload, unsigned int length) {
+void MQTTCallback(char* topic, byte* payload, unsigned int length) {
   String msg;
   for (unsigned int i = 0; i < length; i++) {
     msg += (char)payload[i];
@@ -58,14 +58,14 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
   if (action == "update") {
     Serial.println("[執行] OTA 更新");
-    helper.checkUpdate();
+    g_Helper.checkUpdate();
   } 
   else if (action == "display") {
-    String text  = doc.containsKey("content") ? doc["content"].as<String>() : "N/A";
+    int _qty  = doc.containsKey("pu") ? doc["pu"].as<int>() : 0;
     String wo   = doc.containsKey("wo")      ? doc["wo"].as<String>()      : "N/A";
     int stock  = doc.containsKey("stock")    ? doc["stock"].as<int>()      : 0;
 
-    helper.LedDraw(wo, text, stock, display, SCREEN_WIDTH, SCREEN_HEIGHT);
+    g_Helper.LedDraw(wo, _qty, stock, g_Display, SCREEN_WIDTH, SCREEN_HEIGHT);
     digitalWrite(LED_PIN, LOW);  // 亮燈
     Serial.println("[顯示] WO: " + wo + ", Stock: " + String(stock));
   }
@@ -80,13 +80,14 @@ bool publishMQTT(const char* action, const char* status, const char* msg) {
                   "\", \"status\":\"" + String(status) + 
                   "\", \"msg\":\"" + String(msg) + "\"}";
   
-  bool success = mqttClient.publish(MQTT_TOPIC, payload.c_str());
+  bool success = g_MQTTClient.publish(MQTT_TOPIC, payload.c_str());
   Serial.println(success ? "[MQTT 發送成功]: " + payload : "[MQTT 發送失敗]");
   return success;
 }
 
 // ==========  Setup ==========
-void setup() {
+void setup() 
+{
   Serial.begin(115200);
   delay(2000);
 
@@ -100,19 +101,20 @@ void setup() {
   Wire.setClock(100000);
 
   // OLED 初始化
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+  if (!g_Display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) 
+  {
     Serial.println("[錯誤] OLED 初始化失敗");
     for(;;);
   }
-  display.clearDisplay();
-  display.display();
+  g_Display.clearDisplay();
+  g_Display.display();
 
   // WiFi 連線
-  helper.ConnectWiFi2();
+  g_Helper.ConnectWiFi();
 
   // MQTT 初始化
-  mqttClient.setServer(MQTT_SERVER, 1883);
-  mqttClient.setCallback(mqttCallback);
+  g_MQTTClient.setServer(MQTT_SERVER, 1883);
+  g_MQTTClient.setCallback(MQTTCallback);
 
   Serial.println("[系統] 初始化完成");
 }
@@ -120,8 +122,8 @@ void setup() {
 // ==========  Loop ==========
 void loop() {
   // 維持 MQTT 連線
-  helper.reconnectMQTT(mqttClient, MQTT_TOPIC);
-  mqttClient.loop();
+  g_Helper.reconnectMQTT(g_MQTTClient, MQTT_TOPIC);
+  g_MQTTClient.loop();
 
   // 按鈕偵測（邊緣觸發 + Debounce）
   int currentBtnState = digitalRead(BTN_PIN);

@@ -4,7 +4,7 @@
 
 JimHelper::JimHelper() {}
 
-void JimHelper::ConnectWiFi() 
+void JimHelper::ConnectWiFi2() 
 {
     WiFiManager wm;
     if (!wm.autoConnect("WMS", "88888888")) {

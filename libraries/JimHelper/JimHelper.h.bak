@@ -16,7 +16,7 @@ class JimHelper
 
   public:
     JimHelper();
-    void ConnectWiFi();
+    void ConnectWiFi2();
     void Post2ThingSpeak();
     void reconnectMQTT(PubSubClient& mqttClient, const char* topic);
     void checkUpdate();
