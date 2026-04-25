@@ -27,14 +27,38 @@ void JimHelper::Post2ThingSpeak()
     Serial.println(x == 200 ? "[ThingSpeak] 上傳成功" : "[ThingSpeak] 上傳失敗");
 }
 
-void JimHelper::reconnectMQTT(PubSubClient& mqttClient, const char* topic) 
+void JimHelper::reconnectMQTT(PubSubClient& mqttClient, const char* topic, const char* willTopic, const char* deviceId) 
 {
-    String clientId = "ESP8266-" + String(ESP.getChipId(), HEX);
+    // ====== 取得晶片 ID ======
+    String chipId = "ESP8266-" + String(ESP.getChipId(), HEX);
+    
+    // ====== Status Topic ======
+    static String g_StatusTopicStr;  // static 確保不會被釋放
+    if (willTopic) {
+        g_StatusTopicStr = willTopic;
+    } else {
+        g_StatusTopicStr = String(topic) + "/status";
+    }
+    const char* g_StatusTopic = g_StatusTopicStr.c_str();
+    const char* g_DeviceId = deviceId ? deviceId : chipId.c_str();
     
     while (!mqttClient.connected()) {
         Serial.print("[MQTT] 連線中...");
-        if (mqttClient.connect(clientId.c_str())) {
+        
+        // ====== 設定 Last Will ======
+        // 當異常斷線時，自動發布離線訊息
+        mqttClient.setWill(g_StatusTopic, "offline", true, 0);
+        
+        if (mqttClient.connect(g_DeviceId)) {
             Serial.println("OK");
+            
+            // ====== 發布上線訊息 ======
+            String ip = WiFi.localIP().toString();
+            String onlineMsg = "{\"status\": \"online\", \"device\": \"" + chipId + "\", \"ip\": \"" + ip + "\"}";
+            mqttClient.publish(g_StatusTopic, onlineMsg.c_str(), true);
+            Serial.println("[MQTT] 上線通知: " + onlineMsg);
+            
+            // ====== 訂閱主 Topic ======
             mqttClient.subscribe(topic);
         } else {
             Serial.print("失敗 rc=");

@@ -18,7 +18,7 @@ class JimHelper
     JimHelper();
     void ConnectWiFi();
     void Post2ThingSpeak();
-    void reconnectMQTT(PubSubClient& mqttClient, const char* topic);
+    void reconnectMQTT(PubSubClient& mqttClient, const char* topic, const char* willTopic = nullptr, const char* deviceId = nullptr);
     void checkUpdate();
     void LedDraw(String _wo, int _qty, int _stock, Adafruit_SSD1306& display, int screenWidth = 128, int screenHeight = 64);
 };

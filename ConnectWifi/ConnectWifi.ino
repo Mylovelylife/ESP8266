@@ -11,6 +11,7 @@
 // ========== 系統設定 ==========
 const char* MQTT_SERVER = "10.12.125.144";
 const char* MQTT_TOPIC  = "device/ESP8266-7ac074";
+const char* MQTT_STATUS_TOPIC = "device/ESP8266-7ac074/status";
 
 // I2C 腳位
 #define I2C_SDA 12  // D6
@@ -121,8 +122,8 @@ void setup()
 
 // ==========  Loop ==========
 void loop() {
-  // 維持 MQTT 連線
-  g_Helper.reconnectMQTT(g_MQTTClient, MQTT_TOPIC);
+  // 維持 MQTT 連線（加入 Last Will）
+  g_Helper.reconnectMQTT(g_MQTTClient, MQTT_TOPIC, MQTT_STATUS_TOPIC);
   g_MQTTClient.loop();
 
   // 按鈕偵測（邊緣觸發 + Debounce）
