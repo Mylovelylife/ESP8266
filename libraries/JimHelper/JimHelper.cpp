@@ -45,10 +45,6 @@ void JimHelper::reconnectMQTT(PubSubClient& mqttClient, const char* topic, const
     while (!mqttClient.connected()) {
         Serial.print("[MQTT] 連線中...");
         
-        // ====== 設定 Last Will ======
-        // 當異常斷線時，自動發布離線訊息
-        mqttClient.setWill(g_StatusTopic, "offline", true, 0);
-        
         if (mqttClient.connect(g_DeviceId)) {
             Serial.println("OK");
             
