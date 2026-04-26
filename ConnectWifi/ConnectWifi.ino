@@ -10,8 +10,8 @@
 
 // ========== 系統設定 ==========
 const char* MQTT_SERVER = "10.12.125.144";
-const char* MQTT_TOPIC  = "device/ESP8266-7ac074";
-const char* MQTT_STATUS_TOPIC = "device/ESP8266-7ac074/status";
+const char* MQTT_TOPIC;
+const char* MQTT_STATUS_TOPIC;
 
 // I2C 腳位
 #define I2C_SDA 12  // D6
@@ -112,6 +112,12 @@ void setup()
 
   // WiFi 連線
   g_Helper.ConnectWiFi();
+
+  // ====== 動態產生 MQTT Topic（使用晶片 ID）======
+  String deviceId = "ESP8266-" + String(ESP.getChipId(), HEX);
+  MQTT_TOPIC = ("device/" + deviceId).c_str();
+  MQTT_STATUS_TOPIC = ("device/" + deviceId + "/status").c_str();
+  Serial.println("[MQTT] Topic: " + String(MQTT_TOPIC));
 
   // MQTT 初始化
   g_MQTTClient.setServer(MQTT_SERVER, 1883);
